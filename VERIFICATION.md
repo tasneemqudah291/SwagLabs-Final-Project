@@ -1,14 +1,31 @@
 # Verification status — 2026-09-18
 
-- PASS: Maven test-compile after final corrections (Java 17).
-- PASS: 20 test methods; required Allure annotations on every method.
-- PASS: POM and three suite XML files parse successfully.
-- PASS: no Thread.sleep or Selenium locators in test classes.
-- PASS: five feature branches merged into main; more than eight commits.
-- BLOCKED: final smoke execution could not create Chrome sessions in this environment (SessionNotCreatedException: Chrome instance exited). No live UI pass is claimed.
-- PENDING: full and parallel browser suites, screenshot attachment verification, and a green Jenkins smoke build with a viewable Allure report.
-- PASS: project prepared for public GitHub upload; the SauceDemo password is supplied through `SAUCE_PASSWORD` and is not stored in the repository.
+## Evidence from the Windows run before this repair
 
-An initial smoke attempt exposed that setup hooks were excluded by group filtering. BeforeSuite, BeforeClass and BeforeMethod now use alwaysRun=true. The subsequent run executed those hooks and reached Chrome session creation, where the environment failed. The final source also improves retry screenshot capture and E2E money/basket assertions; it was recompiled successfully after these edits.
+The supplied Surefire report has one final smoke failure in `CheckoutTests.overviewTotalsAreCorrect`. The TestNG report and screenshots show:
 
-See RUN-AND-SUBMIT.md for execution, Jenkins setup and Git upload commands.
+- First checkout attempt: the products page remained open, with Add to cart buttons and no cart badge, while the code waited for `cart_list`.
+- Retried checkout attempt: the cart contained both selected products and displayed the Checkout button, while the code waited for the information page's `continue` button.
+- The cart-badge test also failed once with expected 1, actual 0, then passed on retry.
+
+The failed checkout waits were already 60 seconds. These are missed state transitions; the evidence does not establish that page loading was slow. The old `ProductsPage.add/remove` methods clicked a toggle button and returned immediately without confirming any state change.
+
+A native Chrome password dialog is a plausible interfering factor, not a confirmed cause: the uploaded screenshots capture page content and cannot establish whether browser-level UI was visible. Chrome's temporary test profile now disables password saving and password-leak prompts through preferences. The user's normal Chrome profile is not used. References: [ChromeDriver profile preferences](https://developer.chrome.com/docs/chromedriver/capabilities) and [Chromium password preference definitions](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/password_manager/core/common/password_manager_pref_names.h).
+
+## Repair
+
+- Add/remove waits for both the expected button label and exact cart-badge count, re-reading the DOM after updates. An unexpected initial label fails instead of toggling the wrong state.
+- Each add/remove action clicks once; an ignored click still fails the test. No JavaScript click, assertion removal, skipped test, longer timeout or extra retry was introduced.
+- Wait failures include the expected action/page and current URL. Failure evidence includes a text context file alongside each screenshot and an Allure attachment.
+- `RUN-SMOKE.cmd` runs all five smoke tests in headless Chrome, preserves previous reports and archives results in `diagnostics/`. The script requests the demo password at runtime; it does not store it in source control.
+
+## Validation of the repaired source
+
+- PASS: Java 17 compilation of all main and test sources.
+- PASS: `mvn test "-DsuiteXmlFile=testng-framework.xml"` — 4 tests, 0 failures, 0 errors, 0 skipped. These browser-free tests cover delayed add/remove updates, a click with no effect, and rejection of a duplicate addition. They use a DOM double and do not contact SauceDemo.
+- BLOCKED: live Chrome execution in the repair environment fails at browser startup with `socket() failed: Operation not permitted`. No passing live smoke run of the repaired code is claimed.
+- PENDING: Windows execution of `RUN-SMOKE.cmd`, followed by full/parallel browser suites, updated Allure attachments and a green Jenkins run. The Windows launcher was reviewed but cannot be executed in this Linux environment.
+
+The UI suites retain 20 methods and 28 data-driven invocations; smoke retains five methods. The four framework checks are a separate suite and are not substituted for the smoke suite. GitHub file uploads did not preserve the original local feature-branch history; no claim about that history being present on GitHub is made here.
+
+See [RUN-AND-SUBMIT.md](RUN-AND-SUBMIT.md) for the exact Windows and CI steps.

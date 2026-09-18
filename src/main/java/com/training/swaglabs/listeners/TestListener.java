@@ -37,18 +37,28 @@ public final class TestListener implements ITestListener {
 
   private void captureFailure(ITestResult r) {
     try {
-      byte[] png = ((TakesScreenshot) DriverFactory.get()).getScreenshotAs(OutputType.BYTES);
+      WebDriver driver = DriverFactory.get();
       Path dir = Paths.get("target/screenshots");
       Files.createDirectories(dir);
-      Path file =
-          dir.resolve(
-              r.getName()
-                  + "-"
-                  + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS"))
-                  + "-"
-                  + java.util.UUID.randomUUID()
-                  + ".png");
-      Files.write(file, png);
+      String name =
+          r.getName()
+              + "-"
+              + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS"))
+              + "-"
+              + java.util.UUID.randomUUID();
+      try {
+        String context =
+            "Test: " + r.getName() + System.lineSeparator()
+                + "URL: " + driver.getCurrentUrl() + System.lineSeparator()
+                + "Title: " + driver.getTitle() + System.lineSeparator()
+                + "Failure: " + r.getThrowable() + System.lineSeparator();
+        Files.writeString(dir.resolve(name + ".txt"), context);
+        Allure.addAttachment("Failure context", context);
+      } catch (Exception e) {
+        LOG.warn("Could not save failure context; will still try the screenshot", e);
+      }
+      byte[] png = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+      Files.write(dir.resolve(name + ".png"), png);
       Allure.addAttachment(
           "Failure screenshot", "image/png", new ByteArrayInputStream(png), ".png");
     } catch (Exception e) {

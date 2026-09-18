@@ -2,6 +2,7 @@ package com.training.swaglabs.core;
 
 import com.training.swaglabs.config.Config;
 import com.training.swaglabs.exceptions.FrameworkException;
+import java.util.Map;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,6 +16,13 @@ public final class DriverFactory {
     if (!"chrome".equalsIgnoreCase(Config.require("browser")))
       throw new FrameworkException("Unsupported browser: " + Config.require("browser"));
     ChromeOptions o = new ChromeOptions();
+    // Keep password UI out of the temporary automation profile. This does not
+    // change the user's normal Chrome profile or its password settings.
+    o.setExperimentalOption(
+        "prefs",
+        Map.of(
+            "credentials_enable_service", false,
+            "profile.password_manager_leak_detection", false));
     if (Config.headless()) o.addArguments("--headless=new");
     o.addArguments("--window-size=1440,1000", "--disable-dev-shm-usage", "--no-sandbox");
     DRIVER.set(new ChromeDriver(o));

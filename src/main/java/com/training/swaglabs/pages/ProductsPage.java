@@ -1,15 +1,24 @@
 package com.training.swaglabs.pages;
 
+import com.training.swaglabs.exceptions.FrameworkException;
 import com.training.swaglabs.exceptions.ProductNotFoundException;
 import com.training.swaglabs.model.Product;
 import com.training.swaglabs.utils.PriceUtils;
+import java.time.Duration;
 import java.util.*;
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public final class ProductsPage extends BasePage<ProductsPage> {
   private final By list = By.className("inventory_list"),
       items = By.className("inventory_item"),
       sort = By.className("product_sort_container");
+
+  public ProductsPage() {}
+
+  ProductsPage(WebDriver driver, Duration timeout) {
+    super(driver, timeout);
+  }
 
   protected By openMarker() {
     return list;
@@ -28,7 +37,7 @@ public final class ProductsPage extends BasePage<ProductsPage> {
   }
 
   private WebElement item(String name) {
-    return all(items).stream()
+    return driver.findElements(items).stream()
         .filter(e -> e.findElement(By.className("inventory_item_name")).getText().equals(name))
         .findFirst()
         .orElseThrow(
@@ -38,12 +47,33 @@ public final class ProductsPage extends BasePage<ProductsPage> {
   }
 
   public ProductsPage add(String name) {
-    item(name).findElement(By.tagName("button")).click();
-    return this;
+    return changeCart(name, "Add to cart", "Remove", 1);
   }
 
   public ProductsPage remove(String name) {
-    item(name).findElement(By.tagName("button")).click();
+    return changeCart(name, "Remove", "Add to cart", -1);
+  }
+
+  private ProductsPage changeCart(String name, String before, String after, int change) {
+    WebElement button = item(name).findElement(By.tagName("button"));
+    String actual = button.getText();
+    if (!before.equals(actual)) {
+      throw new FrameworkException(
+          "Cannot " + before + " '" + name + "': button currently says '" + actual + "'");
+    }
+    int expectedCount = cartBadge() + change;
+    await(
+            "Click " + before + " for '" + name + "'",
+            ExpectedConditions.elementToBeClickable(button))
+        .click();
+
+    // Wait for the effect, not just the click. Re-find after React updates the DOM.
+    // Never click again here: a second click can undo an add/remove operation.
+    await(
+        "After " + before + " for '" + name + "': expected button '" + after
+            + "' and cart badge " + expectedCount,
+        ExpectedConditions.refreshed(
+            d -> after.equals(buttonText(name)) && cartBadge() == expectedCount));
     return this;
   }
 

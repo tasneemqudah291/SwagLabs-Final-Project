@@ -2,32 +2,50 @@ package com.training.swaglabs.pages;
 
 import com.training.swaglabs.config.Config;
 import com.training.swaglabs.core.DriverFactory;
+import java.time.Duration;
 import java.util.*;
+import java.util.function.Function;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.*;
 
 public abstract class BasePage<T extends BasePage<T>> {
-  protected final WebDriver driver = DriverFactory.get();
-  protected final WebDriverWait wait = new WebDriverWait(driver, Config.timeout());
+  protected final WebDriver driver;
+  protected final WebDriverWait wait;
+
+  protected BasePage() {
+    this(DriverFactory.get(), Config.timeout());
+  }
+
+  protected BasePage(WebDriver driver, Duration timeout) {
+    this.driver = driver;
+    this.wait = new WebDriverWait(driver, timeout);
+  }
+
+  protected <V> V await(String action, Function<WebDriver, V> condition) {
+    return wait.withMessage(() -> action + "; current URL: " + driver.getCurrentUrl())
+        .until(condition);
+  }
 
   protected abstract By openMarker();
 
   @SuppressWarnings("unchecked")
   public T waitUntilOpen() {
-    wait.until(ExpectedConditions.visibilityOfElementLocated(openMarker()));
+    await(
+        "Opening " + getClass().getSimpleName() + " (expected " + openMarker() + ")",
+        ExpectedConditions.visibilityOfElementLocated(openMarker()));
     return (T) this;
   }
 
   protected WebElement visible(By by) {
-    return wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+    return await("Visible element " + by, ExpectedConditions.visibilityOfElementLocated(by));
   }
 
   protected List<WebElement> all(By by) {
-    return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(by));
+    return await("Elements " + by, ExpectedConditions.presenceOfAllElementsLocatedBy(by));
   }
 
   protected void click(By by) {
-    wait.until(ExpectedConditions.elementToBeClickable(by)).click();
+    await("Click " + by, ExpectedConditions.elementToBeClickable(by)).click();
   }
 
   protected void type(By by, String text) {

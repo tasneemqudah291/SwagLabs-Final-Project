@@ -1,4 +1,5 @@
 target/
+diagnostics/
 allure-results/
 .idea/
 *.iml
