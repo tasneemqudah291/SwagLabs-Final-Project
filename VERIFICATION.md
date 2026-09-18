@@ -4,6 +4,8 @@
 
 PASS, confirmed by the user's console screenshot from 2026-09-18 at 23:48:30 +03:00: `RUN-SMOKE.cmd` completed with `BUILD SUCCESS`, 5 tests, 0 failures, 0 errors and 0 skipped. Maven reported 18.997 seconds total. The runner reported saving `diagnostics/SwagLabs-20260918-234831236.zip`; that ZIP has not yet been inspected.
 
+![Windows smoke test result: 5 tests, 0 failures, 0 errors, 0 skipped and BUILD SUCCESS](docs/evidence/windows-smoke-2026-09-18.png)
+
 This confirms the five smoke tests on the user's Windows machine after the repair. Full-suite, parallel-suite, Allure report and Jenkins verification remain pending.
 
 ## Evidence from the Windows run before this repair
