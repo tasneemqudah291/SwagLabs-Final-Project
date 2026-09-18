@@ -38,6 +38,6 @@ I would add browser-matrix execution, accessibility checks, visual regression fo
 
 ## Verification status
 
-The uploaded Windows run had one remaining smoke failure. The repair adds cart-state synchronization, password-prompt settings for Chrome's temporary test profile and clearer failure diagnostics. Live browser verification of the repaired version is still required; see the evidence and local validation in [VERIFICATION.md](VERIFICATION.md). Configure Jenkins tools named `JDK17` and `Maven3`, install the Allure plugin and its command-line tool, and make Chrome available on the agent. Data providers produce 28 test invocations from the 20 UI methods; four separate framework checks run without a browser.
+The repaired project passed all five smoke tests on Windows on 2026-09-18: 0 failures, 0 errors, 0 skipped and BUILD SUCCESS, confirmed by the user's console screenshot. Java 17 compilation and four browser-free framework regression checks also passed. Full-suite, parallel-suite, Allure report and Jenkins verification remain pending; see [VERIFICATION.md](VERIFICATION.md) for the evidence and limits. Configure Jenkins tools named `JDK17` and `Maven3`, install the Allure plugin and its command-line tool, and make Chrome available on the agent. Data providers produce 28 test invocations from the 20 UI methods; four separate framework checks run without a browser.
 
 See [RUN-AND-SUBMIT.md](RUN-AND-SUBMIT.md) for Windows/Unix Jenkins setup and Git upload steps, and [VERIFICATION.md](VERIFICATION.md) for the actual verification status.

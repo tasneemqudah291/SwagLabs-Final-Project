@@ -1,5 +1,11 @@
 # Verification status — 2026-09-18
 
+## Latest Windows smoke result
+
+PASS, confirmed by the user's console screenshot from 2026-09-18 at 23:48:30 +03:00: `RUN-SMOKE.cmd` completed with `BUILD SUCCESS`, 5 tests, 0 failures, 0 errors and 0 skipped. Maven reported 18.997 seconds total. The runner reported saving `diagnostics/SwagLabs-20260918-234831236.zip`; that ZIP has not yet been inspected.
+
+This confirms the five smoke tests on the user's Windows machine after the repair. Full-suite, parallel-suite, Allure report and Jenkins verification remain pending.
+
 ## Evidence from the Windows run before this repair
 
 The supplied Surefire report has one final smoke failure in `CheckoutTests.overviewTotalsAreCorrect`. The TestNG report and screenshots show:
@@ -23,8 +29,9 @@ A native Chrome password dialog is a plausible interfering factor, not a confirm
 
 - PASS: Java 17 compilation of all main and test sources.
 - PASS: `mvn test "-DsuiteXmlFile=testng-framework.xml"` — 4 tests, 0 failures, 0 errors, 0 skipped. These browser-free tests cover delayed add/remove updates, a click with no effect, and rejection of a duplicate addition. They use a DOM double and do not contact SauceDemo.
-- BLOCKED: live Chrome execution in the repair environment fails at browser startup with `socket() failed: Operation not permitted`. No passing live smoke run of the repaired code is claimed.
-- PENDING: Windows execution of `RUN-SMOKE.cmd`, followed by full/parallel browser suites, updated Allure attachments and a green Jenkins run. The Windows launcher was reviewed but cannot be executed in this Linux environment.
+- PASS: the user's Windows run of `RUN-SMOKE.cmd` completed all five smoke tests successfully, as shown in the console screenshot described above.
+- BLOCKED locally: Chrome startup in the Linux repair environment fails with `socket() failed: Operation not permitted`. The live smoke evidence comes from the user's Windows run.
+- PENDING: full/parallel browser suites, updated Allure attachments and a green Jenkins run.
 
 The UI suites retain 20 methods and 28 data-driven invocations; smoke retains five methods. The four framework checks are a separate suite and are not substituted for the smoke suite. GitHub file uploads did not preserve the original local feature-branch history; no claim about that history being present on GitHub is made here.
 
