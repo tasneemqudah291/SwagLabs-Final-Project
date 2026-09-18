@@ -1,0 +1,2 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Swag Labs Parallel Suite" parallel="classes" thread-count="3"><listeners><listener class-name="com.training.swaglabs.listeners.TestListener"/><listener class-name="com.training.swaglabs.listeners.RetryTransformer"/></listeners><test name="Parallel tests"><packages><package name="com.training.swaglabs.tests"/></packages></test></suite>
